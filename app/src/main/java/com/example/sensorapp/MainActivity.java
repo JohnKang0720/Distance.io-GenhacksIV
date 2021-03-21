@@ -3,10 +3,13 @@ package com.example.sensorapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -49,8 +52,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.SimpleFormatter;
 
+import static com.example.sensorapp.App.CHANNEL_1_ID;
+
 public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
     private static final int PERMISSION_FINE_LOCATION = 99;
+
     static ArrayList<String> a = new ArrayList<>();
     private Sensor s;
     private SensorManager sm;
@@ -67,10 +73,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     ImageView i1;
     ImageView i2;
     ImageView i3;
+    MediaPlayer m;
+    private NotificationManagerCompat nc;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        nc = NotificationManagerCompat.from(this);
         t = findViewById(R.id.textView);
         t2 = findViewById(R.id.textView2);
         t3 = findViewById(R.id.textView3);
@@ -88,9 +99,6 @@ i1.setVisibility(View.VISIBLE);
             }, 100);
         }
 
-
-
-
         sm = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sm.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null) {
             s = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
@@ -104,6 +112,7 @@ i1.setVisibility(View.VISIBLE);
  */
 
     }
+
 
     @SuppressLint("MissingPermission")
     private void getloc() {
@@ -136,13 +145,25 @@ try{
             long date2 = System.currentTimeMillis();
             SimpleDateFormat sd2 = new SimpleDateFormat("hh:mm:ss");
             String time2 = sd.format(date2);
-
             t2.setText(time2);
             i1.setVisibility(View.VISIBLE);
     a.add(t2.getText().toString());
     i2.setVisibility(View.VISIBLE);
     i3.setVisibility(View.GONE);
+            Notification nnn = new NotificationCompat.Builder(this, CHANNEL_1_ID)
+                    .setSmallIcon(R.drawable.ic_baseline_warning_24)
+                    .setContentTitle("COVID-19 EXPOSURE")
+                    .setContentText("Possible exposure to COVID-19: " + a)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .build();
+            nc.notify(1, nnn);
+            if (m == null) {
 
+                m = MediaPlayer.create(this,R.raw.sound_design_beep_censor_tone_002);
+
+
+            }
+            m.start();
 
         }else{
             t2.setText(null);
